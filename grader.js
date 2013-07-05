@@ -24,6 +24,7 @@ References:
 var fs = require('fs');
 var program = require('commander');
 var cheerio = require('cheerio');
+var rest = require('restler');
 var HTMLFILE_DEFAULT = "index.html";
 var CHECKSFILE_DEFAULT = "checks.json";
 
@@ -62,9 +63,14 @@ if(require.main == module) {
 	.option('-u, --url <val>', 'URL to check')
         .parse(process.argv);
     if (program.url) {
-	console.log("Testuji URL...");
+	rest.get(program.url).on('complete', function(result) {
+		fs.writeFileSync('/tmp/grader.html', result);
+		var checkJson = checkHtmlFile('/tmp/grader.html', program.checks);
+		var outJson = JSON.stringify(checkJson, null, 4);
+		console.log(outJson);
+	});
+
     } else if (program.file) {
-	console.log("Testuji soubor...");
     	var checkJson = checkHtmlFile(program.file, program.checks);
     	var outJson = JSON.stringify(checkJson, null, 4);
     	console.log(outJson);
